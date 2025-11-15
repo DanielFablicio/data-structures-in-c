@@ -155,6 +155,7 @@ string_t string_erase(string_t s, size_t pos, size_t len) {
     assert(len <= (s->len - pos));
 
     strcpy(&s->buf[pos], &s->buf[pos + len]);
+    s->len -= len;
     return s;
 }
 
