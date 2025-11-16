@@ -222,7 +222,7 @@ void string_swap(string_t s1, string_t s2) {
     assert(s1 != NULL);
     assert(s2 != NULL);
 
-    char *tmp = s1->buf;
-    s1->buf = s2->buf;
-    s2->buf = tmp;
+    string_type tmp = *s1;
+    *s1 = *s2;
+    *s2 = tmp;
 }
