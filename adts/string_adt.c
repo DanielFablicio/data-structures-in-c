@@ -141,7 +141,7 @@ string_t string_insert(string_t s, size_t pos, const char *substr) {
         }
     }
 
-    memcpy(&s->buf[pos+len], &s->buf[pos], s->len - pos);
+    memmove(&s->buf[pos+len], &s->buf[pos], s->len - pos);
     memcpy(&s->buf[pos], substr, len);
 
     s->len = total_len;
@@ -154,7 +154,7 @@ string_t string_erase(string_t s, size_t pos, size_t len) {
     assert(pos < s->len);
     assert(len <= (s->len - pos));
 
-    strcpy(&s->buf[pos], &s->buf[pos + len]);
+    memmove(&s->buf[pos], &s->buf[pos + len], (s->len - pos - len) + 1);
     s->len -= len;
     return s;
 }
