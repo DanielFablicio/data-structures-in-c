@@ -40,10 +40,14 @@ bool string_grow(string_t s, size_t new_capacity);
 int string_shrink_to_fit(string_t s);
 
 // Assigns a new value to the string, replacing its current contents.
-string_t string_assign(string_t dest, const char *cstr);
+// Act as an alias for string_assign_cstr(dest, string_cstr(src)).
+string_t string_assign(string_t dest, const string_t src);
 
-// Copies string 'src' to the string 'dest'.
-string_t string_copy(string_t dest, const string_t src);
+// Assigns a new value to the string, replacing its current contents.
+string_t string_assign_cstr(string_t dest, const char *cstr);
+
+// Copies a substring of the current value of the string object into the array pointed by buf.
+size_t string_copy(string_t s, char *buf, size_t pos, size_t len);
 
 // Erases the contents of the string. In practice, defining its length as zero.
 string_t string_clear(string_t s);
@@ -68,8 +72,11 @@ string_t string_push_back(string_t s, char c);
 // Erases the last character of the string, reducing its length by one.
 char string_pop_back(string_t s);
 
-// Compares the value of the string object s1 with the value of s2.
+// Compares the value of the string object 's1' with the value of 's2'.
 int string_compare(const string_t s1, const string_t s2);
+
+// Compares the value of the string object s1 with the char array 's2'.
+int string_compare_cstr(const string_t s1, const char *s2);
 
 // Returns whether the values of the strings 's1' and 's2' are equal.
 bool string_equals(const string_t s1, const string_t s2);
