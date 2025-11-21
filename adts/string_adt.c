@@ -79,6 +79,17 @@ string_t string_assign(string_t dest, const char *cstr) {
     return dest;
 }
 
+size_t string_copy(string_t s, char *buf, size_t pos, size_t len) {
+    assert(s != NULL);
+    assert(buf != NULL);
+    assert(pos < s->len);
+
+    const size_t len_copy = s->len - pos <= len ? len : s->len - pos;
+    memcpy(buf, &s->buf[pos], len_copy);
+
+    return len_copy;
+}
+
 size_t string_len(const string_t s) {
     assert(s != NULL);
     return s->len;
