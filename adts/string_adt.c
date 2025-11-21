@@ -4,6 +4,7 @@
 #include <assert.h>
 
 #define BASE_CAPACITY 8
+#define GROW_FACTOR 1.5
 
 static inline ssize_t ssabs(ssize_t a) {
     return (a < 0) ? -a : a;
@@ -37,7 +38,7 @@ string_t string_init(const char *cstr) {
     assert(cstr != NULL);
 
     size_t len = strlen(cstr);
-    size_t cap = len < BASE_CAPACITY ? BASE_CAPACITY : len * 1.5;
+    size_t cap = len < BASE_CAPACITY ? BASE_CAPACITY : len * GROW_FACTOR;
 
     string_type *s = malloc(sizeof(*s));
     if (!s) goto ERR_ALLOC_STRING;
@@ -62,7 +63,12 @@ void string_delete(string_t s) {
     free(s);
 }
 
-string_t string_assign(string_t dest, const char *cstr) {
+string_t string_assign(string_t dest, const string_t src) {
+    assert(src != NULL);
+    return string_assign_cstr(dest, src->buf);
+}
+
+string_t string_assign_cstr(string_t dest, const char *cstr) {
     assert(dest != NULL);
     assert(cstr != NULL);
 
@@ -104,7 +110,7 @@ bool string_grow(string_t s, size_t new_capacity) {
     assert(s != NULL);
     if (new_capacity < s->cap) return true;
 
-    new_capacity *= 1.5;
+    new_capacity *= GROW_FACTOR;
     char *rs_buf = realloc(s->buf, new_capacity);
     if (!rs_buf) return false;
 
@@ -186,6 +192,7 @@ const char *string_cstr(const string_t s) {
 
 char string_get(const string_t s, size_t index) {
     assert(s != NULL);
+    assert(index < s->len);
     return s->buf[index];
 }
 
@@ -197,21 +204,21 @@ void string_set(string_t s, size_t index, char c) {
 }
 
 int string_compare(const string_t s1, const string_t s2) {
+    return string_compare_cstr(s1, s2->buf);
+}
+
+int string_compare_cstr(const string_t s1, const char *s2) {
     assert(s1 != NULL);
     assert(s2 != NULL);
-    return strcmp(s1->buf, s2->buf);
+    return strcmp(s1->buf, s2);
 }
 
 bool string_equals(const string_t s1, const string_t s2) {
-    assert(s1 != NULL);
-    assert(s2 != NULL);
-    return strcmp(s1->buf, s2->buf) == 0;
+    return string_equals_cstr(s1, s2->buf);
 }
 
 bool string_equals_cstr(const string_t s1, const char *s2) {
-    assert(s1 != NULL);
-    assert(s2 != NULL);
-    return strcmp(s1->buf, s2) == 0;
+    return string_compare_cstr(s1, s2) == 0;
 }
 
 ssize_t string_find(const string_t s, const char *substr) {
