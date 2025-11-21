@@ -1,6 +1,29 @@
 #include "framework/unity.h"
 #include "../adts/string_adt.h"
 #include <string.h>
+#include <stdlib.h>
+#include <unistd.h>
+#include <sys/wait.h>
+#include <fcntl.h>
+
+#define TEST_ASSERT_ABORT(fn)                           \
+    do {                                                \
+        pid_t pid = fork();                             \
+        TEST_ASSERT_MESSAGE(pid >= 0, "fork() failed"); \
+        if (pid == 0) {                                 \
+            int devnull = open("/dev/null", O_WRONLY);  \
+            if (devnull >= 0) {                         \
+                dup2(devnull, STDERR_FILENO);           \
+                close(devnull);                         \
+            }                                           \
+                fn;                                     \
+                _exit(0);                               \
+        }                                               \
+        int status;                                     \
+        waitpid(pid, &status, 0);                       \
+        TEST_ASSERT(WIFSIGNALED(status));               \
+        TEST_ASSERT(WTERMSIG(status) == SIGABRT);       \
+    } while (0)
 
 string_t s1 = NULL;
 string_t s2 = NULL;
@@ -81,6 +104,24 @@ void test_string_erase_3(void) {
     TEST_ASSERT_EQUAL_size_t(expected_len, string_len(s1));
 }
 
+void test_string_erase_assert(void) {
+    s1 = string_init("This");
+    s2 = string_new();
+    TEST_ASSERT_ABORT(string_erase(s1, 20, 0));
+    TEST_ASSERT_ABORT(string_erase(s1, 2, 3));
+    TEST_ASSERT_ABORT(string_erase(s2, 0, 1));
+    TEST_ASSERT_ABORT(string_erase(s2, 0, 0));
+}
+
+void test_string_find(void) {
+    s1 = string_init("There are two needles in this haystack with needles.");
+    const ssize_t idx = string_find(s1, "needle");
+
+    const ssize_t expected = 14;
+
+    TEST_ASSERT_EQUAL(expected, idx);
+}
+
 void test_string_swap(void) {
     const char *cstr1 = "an example sentence.";
     const char *cstr2 = "an example phrase.";
@@ -108,9 +149,11 @@ int main(void) {
     RUN_TEST(test_string_new);
     RUN_TEST(test_string_init);
     RUN_TEST(test_string_insert);
+    RUN_TEST(test_string_find);
     RUN_TEST(test_string_erase_1);
     RUN_TEST(test_string_erase_2);
     RUN_TEST(test_string_erase_3);
+    RUN_TEST(test_string_erase_assert);
     RUN_TEST(test_string_swap);
     return UNITY_END();
 }
